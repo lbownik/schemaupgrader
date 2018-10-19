@@ -41,8 +41,8 @@ source file [SchemaUpgrader.java](https://github.com/lbownik/schemaupgrader/blob
 handles version tracking in a designated table called "versions".
 
 The following code snippet shows proper application of these functions.
-'''java
-importjava.sql.Connection;
+'''
+import java.sql.Connection;
 import static schemaupgrader.SchemaUpgrader.*;
 import static java.util.Arrays.asList;
 

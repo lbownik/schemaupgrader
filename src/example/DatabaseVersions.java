@@ -51,7 +51,7 @@ public final class DatabaseVersions {
    static void v1_createUsersTable(final Connection c) throws SQLException {
 
       try (final Statement s = c.createStatement()) {
-         s.execute("CREATE table users(name varchar(20) primary key, pass varchar(20))");
+         s.execute("create table users(name varchar(20) primary key, pass varchar(20))");
          s.execute("insert into users values('\ta', 'b')");
       }
    }
@@ -60,7 +60,7 @@ public final class DatabaseVersions {
     ***************************************************************************/
    static void v2_createLogsTable(final Connection c) throws SQLException {
 
-      using(c).prepare("CREATE table logs(ts bigint primary key,"
+      using(c).prepare("create table logs(ts bigint primary key,"
             + "user varchar(20),"
             + "msg varchar(200),"
             + "foreign key (user) references users(name))").andUpdate();

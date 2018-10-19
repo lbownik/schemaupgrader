@@ -156,21 +156,21 @@ production, as this will cause loss of consistency.
 ##Pros and cons
 The proposed solution exhibits the following advantages:
 * DDL code is controlled along with application code (synching a working copy
- with the repository will always result with newest set schema version patch 
-functions, since they are code);
+ with the repository will always result with newest set schema _version patch 
+functions_, since they are code);
 * the process is reliable (if the database version does not match the expected
  version, the application will not start, upgrading database, on the other hand,
  guarantees proper schema version alignment);
 * the process is repeatable (all schema changes are applied in the same manner: 
-add version patch function, update expected version constant, build application ,
+add _version patch function_, update expected version constant, build application ,
 run application against existing database), and does not require any additional 
 build steps;
 * the solution is flexible (version patches can upgrade schema, migrate data, 
 clean data, transform data, etc.);
-* the DDL code is testable - every version patch function can be put under test
+* the DDL code is testable - every _version patch function_ can be put under test
  harness; the following listing shows such test.
-```java
-@Testpublic void upgradeVersion_upgradesDatabase_forProperInvocation()
+```
+@Test public void upgradeVersion_upgradesDatabase_forProperInvocation()
          throws Exception {
 
    upgradeVersion(this.c, 3, DatabaseVersions::build);
@@ -186,3 +186,19 @@ clean data, transform data, etc.);
                andMapOne((rs) ->rs.getString(1)).isPresent());
  }
 ```
+The proposed solution exhibits the following disadvantages:
+* no SQL DDL script that could be fetched into ERD tool - this is widely 
+offset by the ability of tools to dump schema from live database;
+* no SQL syntax checks during development as the SQL code is represented by
+ string constant - offset by testability;
+* database schema upgrades or data cleaning action may take long for big 
+databases - DDL scripts expose the same issue;
+* _version patch functions_ unit tests may take long time, because they need to
+ target actual database.
+
+##Conclusion
+The proposed solution aims to solve the relational database schema versioning
+ problem in a most streamlined and lightweight way without imposing any new 
+build artifacts and build steps. It is mostly convention over tools, backed
+ by two utility functions placed in a single BDS licensed [java file](https://github.com/lbownik/schemaupgrader/blob/master/src/schemaupgrader/SchemaUpgrader.java) that one 
+can included in a project and use freely.

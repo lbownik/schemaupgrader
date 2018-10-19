@@ -75,3 +75,114 @@ not match the expected one**. Alternatively an upgrade of the application happen
  called from an alternative application entry point (another class with "main"
  function) or an entirely separate application if many applications share the 
 same database.
+
+In order to perform the actual schema
+ changes the _upgradeSchema_ function requires a pointer to a builder 
+function that is able to build the requested schema version by applying 
+the set of changes to the previous one.The implementation is totally up to
+ the developer, but for clarity it is important to keep every version "patch"
+ in a separate function. The example implementation may look like the 
+following (to issue SQL commands I used another micro library of mine
+ that can be found [here](https://github.com/lbownik/fluentjdbc) but it is 
+not mandatory).
+```
+import java.sql.Connection;
+import static fluentJDBC.FluentConnection.using;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+
+public final class DatabaseVersions {
+   /****************************************************************************
+    *
+    ***************************************************************************/
+   public static void build(final Connection c, final int version)
+         throws Exception {
+
+      switch (version) {
+         case 1:
+            v1_createUsersTable(c);
+            return;
+         case 2:
+            v2_createLogsTable(c);
+            return;
+         case 3:
+            v3_trimUserNames(c);
+            return;
+      }
+   }
+   /****************************************************************************
+    * 
+    ***************************************************************************/
+   static void v1_createUsersTable(final Connection c) throws SQLException {
+
+      try (final Statement s = c.createStatement()) {
+         s.execute("create table users(name varchar(20) primary key, pass varchar(20))");
+         s.execute("insert into users values('\ta', 'b')");
+      }
+   }
+   /****************************************************************************
+    *
+    ***************************************************************************/
+   static void v2_createLogsTable(final Connection c) throws SQLException {
+
+      using(c).prepare("create table logs(ts bigint primary key,"
+            + "user varchar(20),"
+            + "msg varchar(200),"
+            + "foreign key (user) references users(name))").andUpdate();
+   }
+   /****************************************************************************
+    *
+    ***************************************************************************/
+   static void v3_trimUserNames(final Connection c) throws Exception {
+
+      final List<String> userNames = using(c).prepare("select name from users").
+            andMap((rs) -> rs.getString(1));
+
+      for (final String name : userNames) {
+         using(c).prepare("update users set name = ? where name = ?").
+               set(name.trim()).set(name).andUpdate();
+      }
+   }
+}
+```
+In this example the first function creates "users" table with a 
+single user. The second function adds "logs" table. The third function 
+does not change the schema itself, but is used to clean the data already 
+populating the database.The obvious constraint of this approach is that
+ one may NEVER modify the existing functions that have been deployed to 
+production, as this will cause loss of consistency.
+
+##Pros and cons
+The proposed solution exhibits the following advantages:
+* DDL code is controlled along with application code (synching a working copy
+ with the repository will always result with newest set schema version patch 
+functions, since they are code);
+* the process is reliable (if the database version does not match the expected
+ version, the application will not start, upgrading database, on the other hand,
+ guarantees proper schema version alignment);
+* the process is repeatable (all schema changes are applied in the same manner: 
+add version patch function, update expected version constant, build application ,
+run application against existing database), and does not require any additional 
+build steps;
+* the solution is flexible (version patches can upgrade schema, migrate data, 
+clean data, transform data, etc.);
+* the DDL code is testable - every version patch function can be put under test
+ harness; the following listing shows such test.
+```java
+@Testpublic void upgradeVersion_upgradesDatabase_forProperInvocation()
+         throws Exception {
+
+   upgradeVersion(this.c, 3, DatabaseVersions::build);
+
+   assertEquals(3, getVersionOf(this.c));
+   assertEquals(new Integer(3),
+            using(c).prepare("select count(*) from versions").
+            andMapOne((rs) ->rs.getInt(1)).get());
+   assertEquals("b",
+            using(c).prepare("select pass from users where name = 'a'").
+            andMapOne((rs) ->rs.getString(1)).get());
+   assertFalse(using(c).prepare("select pass from users where name = '\ta'").
+               andMapOne((rs) ->rs.getString(1)).isPresent());
+ }
+```

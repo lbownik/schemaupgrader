@@ -23,7 +23,7 @@ modification DDL scripts like [flywaydb.org](https://flywaydb.org/).
 These tools are fine but they impose complexity into the building process. 
 The proposed solution, on the other hand, is more a convention then code 
 and assumes that one:
-* keepsall database creation and modification DDL statements as a set of
+* keeps all database creation and modification DDL statements as a set of
  functions expressed in a programming language;
 * uses separate database table to keep track of schema versions;
 * forces the application to check schema version at startup and makes it fail
@@ -153,7 +153,7 @@ populating the database.The obvious constraint of this approach is that
  one may NEVER modify the existing functions that have been deployed to 
 production, as this will cause loss of consistency.
 
-##Pros and cons
+## Pros and cons
 The proposed solution exhibits the following advantages:
 * DDL code is controlled along with application code (synching a working copy
  with the repository will always result with newest set schema _version patch 
@@ -196,7 +196,7 @@ databases - DDL scripts expose the same issue;
 * _version patch functions_ unit tests may take long time, because they need to
  target actual database.
 
-##Conclusion
+## Conclusion
 The proposed solution aims to solve the relational database schema versioning
  problem in a most streamlined and lightweight way without imposing any new 
 build artifacts and build steps. It is mostly convention over tools, backed

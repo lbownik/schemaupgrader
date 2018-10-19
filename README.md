@@ -41,7 +41,8 @@ source file [SchemaUpgrader.java](https://github.com/lbownik/schemaupgrader/blob
 handles version tracking in a designated table called "versions".
 
 The following code snippet shows proper application of these functions.
-'''
+
+```
 import java.sql.Connection;
 import static schemaupgrader.SchemaUpgrader.*;
 import static java.util.Arrays.asList;
@@ -66,4 +67,11 @@ public class Main {
       //rest of the application logic here
    }
 }
-'''
+```
+As has been stated before the main idea is to **check the version 
+of the database schema first** and **exit an application if the version does 
+not match the expected one**. Alternatively an upgrade of the application happens
+ if a special command line switch is provided. The schema upgrade may be also
+ called from an alternative application entry point (another class with "main"
+ function) or an entirely separate application if many applications share the 
+same database.

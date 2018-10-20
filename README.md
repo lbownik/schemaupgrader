@@ -33,7 +33,7 @@ and assumes that one:
 
 ## Implementation
 The proposed solution has been implemented as a BSD licensed micro
- library called "[chemaupgrader](https://github.com/lbownik/schemaupgrader)". The library consists of a single 
+ library called "[schemaupgrader](https://github.com/lbownik/schemaupgrader)". The library consists of a single 
 source file [SchemaUpgrader.java](https://github.com/lbownik/schemaupgrader/blob/master/src/schemaupgrader/SchemaUpgrader.java) (55 lines of code excluding
  comments and blank lines) which provides two static functions:
 * **getVersionOf** - which returns the current version of database schema, and

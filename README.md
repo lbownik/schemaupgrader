@@ -83,7 +83,7 @@ the set of changes to the previous one.The implementation is totally up to
  the developer, but for clarity it is important to keep every version "patch"
  in a separate function. The example implementation may look like the 
 following (to issue SQL commands I used another micro library of mine
- that can be found [here](https://github.com/lbownik/fluentjdbc) but it is 
+ that can be found [*here*](https://github.com/lbownik/fluentjdbc) but it is 
 not mandatory).
 ```
 import java.sql.Connection;
